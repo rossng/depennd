@@ -28,8 +28,11 @@ data FullyConnected : Nat -> Nat -> Type where
 Show (FullyConnected i o) where
   show (MkFullyConnected biases weights) = "FullyConnected\n  " ++ (show biases) ++ "\n  " ++ (show weights)
 
---data ReLU : Nat -> Type where
---  MkReLU :
+data ReLU : Nat -> Nat -> Type where
+  MkReLU : ReLU s s
+
+Show (ReLU s s) where
+  show MkReLU = "ReLU"
 
 -- infixr 5 :>:
 --
@@ -69,9 +72,11 @@ Neg a => Neg (Vect n a) where
   negate = map negate
   abs = map abs
 
-
 Layer FullyConnected where
   runLayer input (MkFullyConnected biases weights) = weights .* input + biases
+
+Layer ReLU where
+  runLayer input MkReLU = map (\e => if e > 0 then e else 0) input
 
 --
 -- sigmoidD : Double -> Double
@@ -186,5 +191,8 @@ lyr = MkFullyConnected   [0.1, 0.1]
                        [ [0.1, 0.1, 0.1]
                        , [0.1, 0.1, 0.1] ]
 
+lyr2 : ReLU 2 2
+lyr2 = MkReLU
+
 main : IO ()
-main = print $ runLayer [1,2,3] lyr
+main = print $ runLayer (runLayer [1,2,3] lyr) lyr2
