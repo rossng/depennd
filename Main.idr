@@ -34,6 +34,12 @@ data ReLU : Nat -> Nat -> Type where
 Show (ReLU s s) where
   show MkReLU = "ReLU"
 
+data Softmax : Nat -> Nat -> Type where
+  MkSoftmax : Softmax s s
+
+Show (Softmax s s) where
+  show MkSoftmax = "Softmax"
+
 -- infixr 5 :>:
 --
 -- data Network : Nat -> List Nat -> Nat -> Type -> Type where
@@ -77,6 +83,11 @@ Layer FullyConnected where
 
 Layer ReLU where
   runLayer input MkReLU = map (\e => if e > 0 then e else 0) input
+
+Layer Softmax where
+  runLayer input MkSoftmax = map (/ s) input'
+    where input' = map exp input
+          s = sum input'
 
 --
 -- sigmoidD : Double -> Double
