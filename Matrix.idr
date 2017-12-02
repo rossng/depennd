@@ -15,3 +15,8 @@ infixl 9 #*#
 
 (#*#) : Num a => Matrix i j a -> Matrix j k a -> Matrix i k a
 A #*# B = map (\Aj => map (dot Aj) (transpose B)) A
+
+infixl 9 .*
+
+(.*) : Num a => Matrix m n a -> Vect n a -> Vect m a
+mat .* vec = map (dot vec) mat

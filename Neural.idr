@@ -50,10 +50,6 @@ Show (Logit s s) where
 --         -> Network    h    hs  o a
 --         -> Network i (h :: hs) o a
 --
-infixl 9 .*
-
-(.*) : Num a => Matrix m n a -> Vect n a -> Vect m a
-mat .* vec = map (dot vec) mat
 
 Num a => Num (Vect n a) where
   (+) = liftA2 (+)
