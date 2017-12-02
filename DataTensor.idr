@@ -8,15 +8,31 @@ data Tensor : (rank : Nat) -> (shape : Vect rank Nat) -> Type -> Type where
   TZ : (value : t) -> Tensor Z [] t
   TN : (values : Vect n (Tensor r s t)) -> Tensor (S r) (n::s) t
 
+showImpl : Show t => Nat -> Tensor r s t -> String
+showImpl d (TZ v) = show v
+showImpl {s=(sh::shs)} d (TN vs) =
+  indent ++ "[\n" ++ indent ++ " " ++ str ++ "\n" ++ indent ++ "]" where
+                       elems : Vect sh String
+                       elems = map (showImpl (S d)) vs
+                       str : String
+                       str = foldr (++) "" $ intersperse "," elems
+                       indent : String
+                       indent = pack (Data.Vect.replicate d ' ')
+
+Show t => Show (Tensor r s t) where
+  show (TZ value) = show value
+  show tensor = showImpl 0 tensor
+
 Functor (Tensor r s) where
   map f (TZ value)  = TZ (f value)
   map f (TN values) = TN (map (map f) values)
 
-
+total
 foldrImpl : (t -> acc -> acc) -> acc -> (acc -> acc) -> Tensor 1 n t -> acc
 foldrImpl f e go (TN []) = go e
 foldrImpl f e go (TN ((TZ x)::xs)) = DataTensor.foldrImpl f e (go . (f x)) (TN xs)
 
+total
 Foldable (Tensor 1 n) where
   foldr f e xs = DataTensor.foldrImpl f e id xs
 
@@ -49,6 +65,10 @@ infixl 9 #*
 
 (#*) : Num t => Tensor 2 [n,m] t -> Tensor 1 [m] t -> Tensor 1 [n] t
 (TN mat) #* vec = TN $ map (TZ . dot vec) mat
+
+ten3 : Tensor 3 [2,3,2] Integer
+ten3 = TN [ TN [TN [TZ 1, TZ 1], TN [TZ 1, TZ 1], TN [TZ 1, TZ 1]]
+          , TN [TN [TZ 1, TZ 1], TN [TZ 1, TZ 1], TN [TZ 1, TZ 1]]]
 
 mat1 : Tensor 2 [2,3] Integer
 mat1 = TN [ TN [TZ 1, TZ 1, TZ 1]
