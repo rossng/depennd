@@ -30,8 +30,7 @@ zipWith {r=(S k)} {s=((S sh)::shs)} f (TN (x::xs)) (TN (y::ys)) = hd :: tl where
 infixl 9 #+
 
 (#+) : Num t => Tensor r s t -> Tensor r s t -> Tensor r s t
-(TZ a) #+ (TZ b) = TZ (a + b)
--- (TN as) #+ (TN bs) = TN (as + bs)
+a #+ b = zipWith (+) a b
 
 -- interface Layer (layer : List Nat -> List Nat -> Type) where
 --   runLayer :    Vect  i   Double
