@@ -1,21 +1,17 @@
 module Neural
 
 import Data.Vect
+import Matrix
 
--- %hide transpose
+%access export
 
-
-dot : Num a => Vect n a -> Vect n a -> a
-dot va vb = foldr (+) 0 $ zipWith (*) va vb
-
-Matrix : (rows : Nat) -> (cols : Nat) -> Type -> Type
-Matrix r c a = Vect r (Vect c a)
-
+public export
 interface Layer (layer : Nat -> Nat -> Type) where
   runLayer :    Vect  i   Double
              -> layer i o
              -> Vect    o Double
 
+public export
 data FullyConnected : Nat -> Nat -> Type where
   MkFullyConnected :    (biases  : Vect   o   Double)
                      -> (weights : Matrix o i Double)
@@ -24,18 +20,21 @@ data FullyConnected : Nat -> Nat -> Type where
 Show (FullyConnected i o) where
   show (MkFullyConnected biases weights) = "FullyConnected\n  " ++ (show biases) ++ "\n  " ++ (show weights)
 
+public export
 data ReLU : Nat -> Nat -> Type where
   MkReLU : ReLU s s
 
 Show (ReLU s s) where
   show MkReLU = "ReLU"
 
+public export
 data Softmax : Nat -> Nat -> Type where
   MkSoftmax : Softmax s s
 
 Show (Softmax s s) where
   show MkSoftmax = "Softmax"
 
+public export
 data Logit : Nat -> Nat -> Type where
   MkLogit : Logit s s
 
@@ -69,11 +68,6 @@ Scalable Double where
 
 Scalable a => Scalable (Vect n a) where
   scale lambda = map (scale lambda)
-
-infixl 9 #*#
-
-(#*#) : Num a => Matrix i j a -> Matrix j k a -> Matrix i k a
-A #*# B = map (\Aj => map (dot Aj) (transpose B)) A
 
 Neg a => Neg (Vect n a) where
   (-) = liftA2 (-)
@@ -202,14 +196,3 @@ Layer Logit where
 -- output : Vect 2 Double
 -- output = [0.01,0.99]
 --
-
-lyr : FullyConnected 3 2
-lyr = MkFullyConnected   [0.1, 0.1]
-                       [ [0.1, 0.1, 0.1]
-                       , [0.1, 0.1, 0.1] ]
-
-lyr2 : ReLU 2 2
-lyr2 = MkReLU
-
-main : IO ()
-main = print $ runLayer (runLayer [1,2,3] lyr) lyr2
