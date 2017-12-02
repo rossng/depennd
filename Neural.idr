@@ -1,4 +1,4 @@
-module Main
+module Neural
 
 import Data.Vect
 
@@ -11,14 +11,10 @@ dot va vb = foldr (+) 0 $ zipWith (*) va vb
 Matrix : (rows : Nat) -> (cols : Nat) -> Type -> Type
 Matrix r c a = Vect r (Vect c a)
 
---Show elem => Show (Matrix r c elem) where
---  show = show . (map toList) . toList
-
 interface Layer (layer : Nat -> Nat -> Type) where
   runLayer :    Vect  i   Double
              -> layer i o
              -> Vect    o Double
-
 
 data FullyConnected : Nat -> Nat -> Type where
   MkFullyConnected :    (biases  : Vect   o   Double)
@@ -39,6 +35,12 @@ data Softmax : Nat -> Nat -> Type where
 
 Show (Softmax s s) where
   show MkSoftmax = "Softmax"
+
+data Logit : Nat -> Nat -> Type where
+  MkLogit : Logit s s
+
+Show (Logit s s) where
+  show MkLogit = "Logit"
 
 -- infixr 5 :>:
 --
@@ -88,6 +90,10 @@ Layer Softmax where
   runLayer input MkSoftmax = map (/ s) input'
     where input' = map exp input
           s = sum input'
+
+Layer Logit where
+  runLayer input MkLogit = map logistic input
+    where logistic x = 1 / (1 + exp (-x))
 
 --
 -- sigmoidD : Double -> Double
