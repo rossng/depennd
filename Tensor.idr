@@ -4,13 +4,18 @@ import Data.Fin
 import Data.Vect
 import Matrix
 
+-- Not sure how to make this work cleanly
+
 tensor : Vect n Nat -> Type -> Type
 tensor []        a = a
-tensor (m :: ms) a = Vect m (tensor ms a)
+tensor (m :: ms) a = Vect m (tensor ms a):
 
 tmap : (t -> u) -> tensor s t -> tensor s u
-tmap {s=[]} f v = f v
-tmap {s=(x::xs)} f vs = tmap f vs
+tmap {s = []} f v = f v
+tmap {s = (Z :: xs)} f v = []
+tmap {s = ((S k) :: xs)} f v = tmap f v
+--tmap {s=[]} f v = f v
+--tmap {s=(x::xs)} f vs = tmap f vs
 
 -- tzipWith : (f : a -> b -> c) -> (tensor s a) -> (tensor s b) -> tensor s c
 -- tzipWith {s=[]} f x y = f x y
@@ -21,21 +26,21 @@ tmap {s=(x::xs)} f vs = tmap f vs
 infixl 9 #*
 
 (#*) : Num a => tensor [y,x] a -> tensor [x] a -> tensor [y] a
-mat #* vec = map (dot vec) mat
+--mat #* vec = map (dot vec) mat
 
 infixl 9 #+
 
 (#+) : Num a => tensor s a -> tensor s a -> tensor s a
-(#+) {s=[]} t1 t2 = t1 + t2
-(#+) {s=(x::xs)} (t::ts) t2 = ?hole
+--(#+) {s=[]} t1 t2 = t1 + t2
+--(#+) {s=(Z::xs)} (t::ts) t2 = ?hole
 
-data Index : Vect n Nat -> Type where
-  Here : Index []
-  At   : Fin m -> Index ms -> Index (m :: ms)
-
-index : Index ms -> tensor ms a -> a
-index Here     a = a
-index (At k i) v = index i $ index k v
+-- data Index : Vect n Nat -> Type where
+--   Here : Index []
+--   At   : Fin m -> Index ms -> Index (m :: ms)
+--
+-- index : Index ms -> tensor ms a -> a
+-- index Here     a = a
+-- index (At k i) v = index i $ index k v
 
 interface Layer (layer : Vect n Nat -> Vect n Nat -> Type) where
   runLayer :    tensor i   Double
@@ -49,8 +54,8 @@ data FullyConnected : Vect n Nat -> Vect n Nat -> Type where
                      -> (weights : tensor (head o :: i) Double)
                      -> FullyConnected i o
 
-Layer FullyConnected where
- runLayer input (MkFullyConnected {i=[x]} {o=[y]} biases weights) = weights #* input
-
-lyr : FullyConnected [2] [3]
-lyr = MkFullyConnected {i=[2]} {o=[3]} [1,2,3] [[1,1],[1,1],[1,1]]
+-- Layer FullyConnected where
+--  runLayer input (MkFullyConnected {i=[x]} {o=[y]} biases weights) = weights #* input
+--
+-- lyr : FullyConnected [2] [3]
+-- lyr = MkFullyConnected {i=[2]} {o=[3]} [1,2,3] [[1,1],[1,1],[1,1]]

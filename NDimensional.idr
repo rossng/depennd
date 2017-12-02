@@ -4,11 +4,11 @@ import Data.Vect
 import Data.List
 import Matrix
 
-data NDVect : (shape : List Nat) -> Type -> Type where
-  NDVZ : (value : t) -> NDVect [] t
-  NDV  : (values : Vect n (NDVect s t)) -> NDVect (n::s) t
+data NDVect : (rank : Nat) -> (shape : Vect rank Nat) -> Type -> Type where
+  NDVZ : (value : t) -> NDVect Z [] t
+  NDV  : (values : Vect n (NDVect r s t)) -> NDVect (S r) (n::s) t
 
-nmap : (t -> u) -> (NDVect s t) -> NDVect s u
+nmap : (t -> u) -> (NDVect r s t) -> NDVect r s u
 nmap f (NDVZ value) = NDVZ (f value)
 nmap f (NDV values) = NDV (map (nmap f) values)
 
@@ -17,7 +17,8 @@ nmap f (NDV values) = NDV (map (nmap f) values)
 --              -> layer i o
 --              -> Vect    o Double
 --
--- data FullyConnected : Nat -> Nat -> Type where
---   MkFullyConnected :    (biases  : Vect   o   Double)
+-- data FullyConnected : List Nat -> List Nat -> Type where
+--   MkFullyConnected :    {i: []}
+--                      -> (biases  : Vect   o   Double)
 --                      -> (weights : Matrix o i Double)
 --                      -> FullyConnected i o
