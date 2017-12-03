@@ -4,6 +4,9 @@ import Data.Vect
 import Data.List
 import Matrix
 
+%access export
+
+public export
 data Tensor : (rank : Nat) -> (shape : Vect rank Nat) -> Type -> Type where
   TZ : (value : t) -> Tensor Z [] t
   TN : (values : Vect n (Tensor r s t)) -> Tensor (S r) (n::s) t
@@ -27,12 +30,10 @@ Functor (Tensor r s) where
   map f (TZ value)  = TZ (f value)
   map f (TN values) = TN (map (map f) values)
 
-total
 foldrImpl : (t -> acc -> acc) -> acc -> (acc -> acc) -> Tensor 1 n t -> acc
 foldrImpl f e go (TN []) = go e
-foldrImpl f e go (TN ((TZ x)::xs)) = DataTensor.foldrImpl f e (go . (f x)) (TN xs)
+foldrImpl f e go (TN ((TZ x)::xs)) = assert_total $ DataTensor.foldrImpl f e (go . (f x)) (TN xs)
 
-total
 Foldable (Tensor 1 n) where
   foldr f e xs = DataTensor.foldrImpl f e id xs
 
@@ -71,7 +72,7 @@ ten3 = TN [ TN [TN [TZ 1, TZ 1], TN [TZ 1, TZ 1], TN [TZ 1, TZ 1]]
           , TN [TN [TZ 1, TZ 1], TN [TZ 1, TZ 1], TN [TZ 1, TZ 1]]]
 
 mat1 : Tensor 2 [2,3] Integer
-mat1 = TN [ TN [TZ 1, TZ 1, TZ 1]
+mat1 = TN [ TN [TZ 1, TZ 2, TZ 3]
           , TN [TZ 1, TZ 1, TZ 1]]
 
 vec1 : Tensor 1 [3] Integer
@@ -79,14 +80,3 @@ vec1 = TN [TZ 1, TZ 1, TZ 1]
 
 mul1 : Tensor 1 [2] Integer
 mul1 = mat1 #* vec1
-
--- interface Layer (layer : List Nat -> List Nat -> Type) where
---   runLayer :    Vect  i   Double
---              -> layer i o
---              -> Vect    o Double
---
--- data FullyConnected : List Nat -> List Nat -> Type where
---   MkFullyConnected :    {i: []}
---                      -> (biases  : Vect   o   Double)
---                      -> (weights : Matrix o i Double)
---                      -> FullyConnected i o
