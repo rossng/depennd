@@ -30,12 +30,17 @@ Functor (Tensor r s) where
   map f (TZ value)  = TZ (f value)
   map f (TN values) = TN (map (map f) values)
 
-foldrImpl : (t -> acc -> acc) -> acc -> (acc -> acc) -> Tensor 1 n t -> acc
-foldrImpl f e go (TN []) = go e
-foldrImpl f e go (TN ((TZ x)::xs)) = assert_total $ DataTensor.foldrImpl f e (go . (f x)) (TN xs)
+-- probably not a technically-correct foldr
+foldrImpl : (t -> acc -> acc) -> acc -> Tensor r n t -> acc
+foldrImpl f e (TN []) = e
+foldrImpl f e (TZ x) = f x e
+foldrImpl f e (TN ((TZ x) :: xs)) = assert_total $ f x (DataTensor.foldrImpl f e (TN xs))
+foldrImpl f e (TN ((TN xs) :: xss)) = assert_total $ DataTensor.foldrImpl f accum (TN xs) where
+    accum : acc
+    accum = DataTensor.foldrImpl f e (TN xss)
 
-Foldable (Tensor 1 n) where
-  foldr f e xs = DataTensor.foldrImpl f e id xs
+Foldable (Tensor r n) where
+  foldr f e xs = DataTensor.foldrImpl f e xs
 
 -- TODO: generalise Foldable instance to arbitrary-rank Tensors
 

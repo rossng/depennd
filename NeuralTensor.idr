@@ -26,7 +26,6 @@ Show (FullyConnected 1 1 i o) where
   show (MkFullyConnected inr outr biases weights) = "FullyConnected\n  " ++ (show biases) ++ "\n  " ++ (show weights)
 
 
-
 data ReLU : Vect inr Nat -> Vect outr Nat -> Type where
   MkReLU : ReLU s s
 
@@ -35,3 +34,22 @@ Layer (ReLU) where
 
 Show (ReLU s s) where
   show MkReLU = "ReLU"
+
+
+data Softmax : Vect inr Nat -> Vect outr Nat -> Type where
+  MkSoftmax : Softmax s s
+
+Layer (Softmax) where
+  runLayer input MkSoftmax = map (/ s) input'
+    where input' = map exp input
+          s = sum input'
+
+Show (Softmax s s) where
+  show MkSoftmax = "Softmax"
+
+
+data Logit : Vect inr Nat -> Vect outr Nat -> Type where
+  MkLogit : Logit s s
+
+Show (Logit s s) where
+  show MkLogit = "Logit"
